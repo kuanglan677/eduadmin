@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>image/evaluateTeacher_128px.png</file>
+        <file>image/grades_128px.png</file>
+        <file>image/info_128px.png</file>
+        <file>image/lesson_128px.png</file>
+        <file>image/library_128px.png</file>
+        <file>image/questionnaire_128px.png</file>
+        <file>image/school_calendar_128px.png</file>
+        <file>image/character_128px.png</file>
+        <file>image/courseChoose_128px.png</file>
+        <file>image/evaluateResult_64px.png</file>
+        <file>image/gradeManager_128px.png</file>
+        <file>image/libraryManager_128px.png</file>
+        <file>image/teacherInfo_128px.png</file>
+        <file>image/View_Results_64px_.png</file>
+    </qresource>
+</RCC>
