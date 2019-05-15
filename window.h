@@ -22,6 +22,7 @@ public:
     Ui::Window *ui;
     EduAdmin *_eduadmin;
 private slots:
+    int semesterStringToInt(const QString& semester);//String 类型semester转化为int类型
     //学生界面
     void on_personInfo_clicked();
     void on_studentGrade_clicked();
@@ -45,6 +46,6 @@ private slots:
     void on_pushButton_modify_clicked();
     void on_pushButton_selectCourse_Ok_clicked();
     void on_pushButton_refresh_clicked();//刷新课表
-    void on_pushButton_checkHasSelected_clicked();
+    void on_pushButton_checkHasSelected_clicked();//查看已选课程
 };
 #endif // WINDOW_H

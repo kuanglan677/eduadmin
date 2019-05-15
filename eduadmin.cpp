@@ -14,22 +14,6 @@
 
 #include <QDebug>
 
-//#include <QItemDelegate>
-//class CheckBox:public QItemDelegate{
-//    Q_OBJECT
-//public:
-//    CheckBox();
-//    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
-//private:
-//    QPushButton *select;
-//};
-//CheckBox::CheckBox(){}
-//void CheckBox::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const{
-//    select->show();
-
-//}
-
-
 EduAdmin::EduAdmin(QWidget *parent)
     : QWidget(parent),_window(new Window(this,this)),_gradaData(new GradeData),_sqlite(new Sqlite)
 {
@@ -42,9 +26,8 @@ EduAdmin::EduAdmin(QWidget *parent)
 EduAdmin::~EduAdmin()
 {
 }
-//=========================================================================
-// 数据库相关函数
-//=========================================================================
+
+//初始化数据库
 void EduAdmin::initSqlite(){
     if(!_sqlite->createDatabase("eduadmin")){}  //连接数据库
     if(!_sqlite->createTables({"CourseTable",  //创建课程表（包含所有课程的表）
@@ -66,28 +49,19 @@ void EduAdmin::initSqlite(){
 // 界面相关函数
 //=========================================================================
 //课程管理界面
+
 bool EduAdmin::addCourse(QString semester,QString courseName,QString teacherName,QString capacity){
-    QString query = tr("insert into CourseTable values('%1','%2','%3','%4')").arg(courseName,semester,teacherName,capacity);
-    if(!_sqlite->execQuery(query)){
-        /*
-         * 错误检测
-         */
-        return false;
-    }
-    return true;
+    if(!_sqlite->addCourse(semester,courseName,teacherName,capacity)){return false;}
+    else return true;
 }//添加新的课程
 bool EduAdmin::deleteCourse(const QString& courseName){
-    QString query;
-    query = tr("delete from CourseTable where CourseName = '%1'").arg(courseName);
-    if(_sqlite->execQuery(query)){
-        return true;
-    }else{
-        /*
-         * 纠错机制
-         */
-        return false;
-    }
+    if(!_sqlite->deleteCourse(courseName)){return false;}
+    else return true;
 }//删除课程
+bool EduAdmin::updateCourseInfo(const QString& oldName,const QString& newCourseName,const QString& newSemester,const QString& newTeacherName,const QString& newCapasity){
+    if(!_sqlite->updateCourseInfo(oldName,newCourseName,newSemester,newTeacherName,newCapasity)){return false;}
+    return true;
+}//更改课程信息
 void EduAdmin::showAllCourse(){
     QSqlQueryModel *model = new QSqlQueryModel;
     _sqlite->execInquiryAll("CourseTable",model);
@@ -97,81 +71,43 @@ void EduAdmin::showAllCourse(){
     model->setHeaderData(2,Qt::Horizontal,QObject::tr("TeacherName"));
     model->setHeaderData(3,Qt::Horizontal,QObject::tr("Capacity"));
 
-
-
     _window->ui->tableView_allCourse->setModel(model);
     _window->ui->tableView_allCourse->verticalHeader()->hide();
 
 }//展示所有课程
-bool EduAdmin::updateCourseInfo(const QString& oldName,const QString& newCourseName,const QString& newSemester,const QString& newTeacherName,const QString& newCapasity){
-    if(!_sqlite->updateCourseInfo(oldName,newCourseName,newSemester,newTeacherName,newCapasity)){
-        return false;
-    }
+
+bool EduAdmin::addIntoSemesterCourse(int semester,const QString& courseName){
+    if(!_sqlite->addIntoSemesterCourse(semester,courseName)){return false;}
     return true;
-}//更改课程信息
-bool EduAdmin::addIntoSemesterCourse(const QString& semester,const QString& courseName){
-    QString str;
-
-    if(semester=="第一学期")
-        str ="FirstSCT";
-    else if(semester=="第二学期")
-        str ="SecondSCT";
-    else if(semester=="第三学期")
-        str ="ThirdSCT";
-    else if(semester=="第四学期")
-        str ="FourthSCT";
-
-    if(!str.isEmpty()){
-        QString query = QObject::tr( "alter table %1 add %2 varchar(20) default '%3' not null").arg(str,courseName, QObject::tr("Not"));
-        if(_sqlite->execQuery(query)){return true;}
-    }
-    return false;
 } //添加到相应的学期选课表
-bool EduAdmin::deleteFromSemesterCourse(const QString& semester,const QString& courseName){
-    QString str;
-
-    if(semester=="第一学期")
-        str ="FirstSCT";
-    else if(semester=="第二学期")
-        str ="SecondSCT";
-    else if(semester=="第三学期")
-        str ="ThirdSCT";
-    else if(semester=="第四学期")
-        str ="FourthSCT";
-
-    if(!str.isEmpty()){
-        if(_sqlite->deleteColumn(str,courseName)){return true;}
-        //SQlite 只支持一个alter的一个子集 不支持删除列的语句 这儿自定义一个函数实现
-//        QString query = QObject::tr(" alter table %1 drop column %2").arg(str,courseName);
-//        if(_sqlite->execQuery(query)){return true;}
-    }
-
-    return false;
+bool EduAdmin::deleteFromSemesterCourse(int semester,const QString& courseName){
+    if(!_sqlite->deleteFromSemesterCourse(semester,courseName)){return false;}
+    return true;
 } //从相应的学期选课表中删除
 
+
 //学生选课界面
+
 void EduAdmin::showAllCurrentSemesterCourse(const QString& semester = "第一学期"){
-    QSqlQueryModel *model = new QSqlQueryModel;
+    QSqlQueryModel *model = new QSqlQueryModel; //从数据库获取模型
     _sqlite->selectSemesterCourse(semester,model);
 
-
-    model->setHeaderData(0,Qt::Horizontal,QObject::tr("CourseName"));
+    model->setHeaderData(0,Qt::Horizontal,QObject::tr("CourseName"));//设置表头
     model->setHeaderData(1,Qt::Horizontal,QObject::tr("TeacherName"));
     model->setHeaderData(2,Qt::Horizontal,QObject::tr("Capacity"));
     model->insertColumn(3);
     model->setHeaderData(3,Qt::Horizontal,QObject::tr("Selected"));
 
-    _window->ui->tableView_selectCourse->setModel(model);
+    _window->ui->tableView_selectCourse->setModel(model);//设置模型
+    _window->ui->tableView_selectCourse->verticalHeader()->hide();
 
-    for(int i=0;i<model->rowCount();++i){
+    for(int i=0;i<model->rowCount();++i){//设置checkbox
         QCheckBox *ch = new QCheckBox;
 //        ch->setText("选择");//不会显示
         ch->setCheckable(false);//设置不可编辑
         ch->setEnabled(true);//设置可选
         _window->ui->tableView_selectCourse->setIndexWidget(model->index(i,3),new QCheckBox(this));
-    }
-
-    _window->ui->tableView_selectCourse->verticalHeader()->hide();
+    }    
 }//显示当前学期课程
 bool EduAdmin::insertIntoSCT(const QString& semesterTable,const QString& studentNo,QStringList il){
     if(!_sqlite->insertIntoSCT(semesterTable,studentNo,il)){return false;}

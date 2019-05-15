@@ -118,6 +118,7 @@ bool Sqlite::inquiryData(){
     }
 }//查找数据select
 
+
 bool Sqlite::deleteColumn(const QString& tableName,const QString& columnName){
     //由于sqlite不支持删除列 只好把这一列的值全设为NULL
     QString query;
@@ -125,16 +126,74 @@ bool Sqlite::deleteColumn(const QString& tableName,const QString& columnName){
     if(!execQuery(query))return false;
     return true;
 }  //删除表的指定列
+
+
 bool Sqlite::insertIntoSCT(const QString& semesterTable,const QString& studentNo,QStringList il){
     QString query;
     int count = il.size();
+    query = QObject::tr("delete fron %1 where StudentNo = '%2'").arg(semesterTable,studentNo);
+    execQuery(query);
     query = QObject::tr("insert into %1 values('%2'").arg(semesterTable,studentNo);
     for (int i=0;i<count;++i) {
         query+=QObject::tr(",'%1'").arg(il.at(i));
     }
     query+=")";
 
-    if(execQuery(query)){return true;}
-    else return false;
-
+    if(!execQuery(query)){
+        return false;
+    }
+    else return true;
 }//学生添加课程
+QString Sqlite::semesterIntToQString(int semester){
+    switch (semester) {
+    case 1:
+        return "第一学期";
+    case 2:
+        return "第一学期";
+    case 3:
+        return "第一学期";
+    case 4:
+        return "第一学期";
+    default:
+        return "";
+    }
+}
+QString Sqlite::sctIntToQString(int semester){
+    switch (semester) {
+    case 1:
+        return "FirstSCT";
+    case 2:
+        return "SecondSCT";
+    case 3:
+        return "ThirdSCT";
+    case 4:
+        return "FourthSCT";
+    default:
+        return "";
+    }
+}
+bool Sqlite::addIntoSemesterCourse(int semester,const QString& courseName){
+    QString sem = sctIntToQString(semester);
+    if(!sem.isEmpty()){
+        QString query = QObject::tr( "alter table %1 add %2 varchar(20) default '%3' not null").arg(sem,courseName, QObject::tr("Not"));
+        if(execQuery(query)){return true;}
+    }
+    return false;
+} //添加到相应的学期选课表
+bool Sqlite::deleteFromSemesterCourse(int semester,const QString& courseName){
+    QString sem = sctIntToQString(semester);
+    if(!sem.isEmpty()){
+        if(deleteColumn(sem,courseName)){return true;}
+    }
+    return false;
+} //从相应的学期选课表中删除
+bool Sqlite::deleteCourse(const QString& courseName){
+    QString query= QObject::tr("delete from CourseTable where CourseName = '%1'").arg(courseName);
+    if(!execQuery(query)){return false;}
+    else return true;
+}//删除课程
+bool Sqlite::addCourse(QString semester,QString courseName,QString teacherName,QString capacity){
+    QString query = QObject::tr("insert into CourseTable values('%1','%2','%3','%4')").arg(courseName,semester,teacherName,capacity);
+    if(!execQuery(query)){return false;}
+    else return true;
+}//添加新的课程

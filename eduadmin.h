@@ -24,12 +24,14 @@ public:
     void showAllCourse();//展示所有课程
     bool deleteCourse(const QString& courseName);//删除课程
     bool updateCourseInfo(const QString& oldName,const QString& newCourseName,const QString& newSemester,const QString& newTeacherName,const QString& newCapasity);//更改课程信息
-    bool addIntoSemesterCourse(const QString& semester,const QString& courseName); //添加到相应的学期选课表
-    bool deleteFromSemesterCourse(const QString& semester,const QString& courseName); //从相应的学期选课表中删除
+//    bool addIntoSemesterCourse(const QString& semester,const QString& courseName); //添加到相应的学期选课表
+    bool addIntoSemesterCourse(int semester,const QString& courseName); //添加到相应的学期选课表
+//    bool deleteFromSemesterCourse(const QString& semester,const QString& courseName); //从相应的学期选课表中删除
+    bool deleteFromSemesterCourse(int semester,const QString& courseName); //从相应的学期选课表中删除
     //学生选课界面
     void showAllCurrentSemesterCourse(const QString& semester);//显示当前学期课程
     bool insertIntoSCT(const QString& semesterTable,const QString& studentNo,QStringList il);//学生添加课程
-//private:
+private:
     Window *_window;
     GradeData *_gradaData;
     Sqlite *_sqlite;
