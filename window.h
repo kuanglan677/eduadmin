@@ -44,5 +44,7 @@ private slots:
     void on_pushButton_delete_clicked();
     void on_pushButton_modify_clicked();
     void on_pushButton_selectCourse_Ok_clicked();
+    void on_pushButton_refresh_clicked();//刷新课表
+    void on_pushButton_checkHasSelected_clicked();
 };
 #endif // WINDOW_H

@@ -16,10 +16,15 @@ public:
     bool execQuery(const QString& query);  //执行普通sql语句 增删改
     bool execInquiryAll(const QString& tableName,QSqlQueryModel *model); //执行(全部)查找
 
+    bool deleteColumn(const QString& tableName,const QString& columnName);  //删除表的指定列
+
+
     bool updateCourseInfo(const QString& oldName,const QString& newCourseName,const QString& newSemester,const QString& newTeacherName,const QString& newCapasity);//更新课程信息
     bool selectSemesterCourse(const QString& semester,QSqlQueryModel *model); //查找该学期的课程
+    bool insertIntoSCT(const QString& semesterTable,const QString& studentNo,QStringList il);//学生添加课程
     bool inquiryData();//查找
-
+private:
+//    QStringList a;
 //    bool initCoursetable();//初始化课程表
 };
 #endif // SQLITE_H

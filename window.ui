@@ -244,7 +244,7 @@
        <string>确定</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton">
+     <widget class="QPushButton" name="pushButton_refresh">
       <property name="geometry">
        <rect>
         <x>320</x>
@@ -257,7 +257,7 @@
        <string>刷新</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="pushButton_2">
+     <widget class="QPushButton" name="pushButton_checkHasSelected">
       <property name="geometry">
        <rect>
         <x>230</x>

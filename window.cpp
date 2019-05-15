@@ -31,7 +31,7 @@ Window::Window(EduAdmin *eduadmin,QWidget *parent)
 
 Window::~Window(){
     delete ui;
-//    delete _eduadmin;
+    //    delete _eduadmin;
 }
 
 QString Window::getOpenFileName(){
@@ -106,7 +106,8 @@ void Window::on_addCourse_clicked()
     if((courseName.isEmpty()||teacherName.isEmpty())){
         QMessageBox::critical(this,tr("提示"),tr("请先输入有效的课程及教师"),QMessageBox::Ok,QMessageBox::Ok);
     }else{
-        _eduadmin->addCourse(semester,courseName,teacherName,capacity);
+        _eduadmin->addCourse(semester,courseName,teacherName,capacity);//添加到课程表
+        _eduadmin->addIntoSemesterCourse(semester,courseName);//添加到相应的学期选课情况表
     }
     _eduadmin->showAllCourse();
 }//添加课程
@@ -116,9 +117,9 @@ void Window::on_pushButton_inquiry_clicked()
 
     QString inquiry = ui->lineEdit_courseName2->text();
     if(inquiry.isEmpty()){
-                QMessageBox::critical(this,tr("提示"),tr("输入为空"),
-                                      QMessageBox::Ok,QMessageBox::Ok);
-                return;
+        QMessageBox::critical(this,tr("提示"),tr("输入为空"),
+                              QMessageBox::Ok,QMessageBox::Ok);
+        return;
     }
     QAbstractItemModel *model = ui->tableView_allCourse->model();
 
@@ -147,28 +148,28 @@ void Window::on_pushButton_delete_clicked()
         return;
     }
 
-    QMap<int,QString> rowMap;
+    QMap<QString,QString> rowMap;//储存每行对应的
 
     foreach(QModelIndex index,selected){
-        rowMap.insert(index.row(),model->index(index.row(),0).data().toString());
+        rowMap.insert(model->index(index.row(),0).data().toString(),model->index(index.row(),1).data().toString());
     }
 
-    QMapIterator<int,QString>rowMapIterator(rowMap);
+    QMapIterator<QString,QString>rowMapIterator(rowMap);
     rowMapIterator.toBack();  //从后向前删
     while(rowMapIterator.hasPrevious()){
         rowMapIterator.previous();
-        QString deleteCourse = rowMapIterator.value();
+        QString deleteCourse = rowMapIterator.key();
+        QString CourseSemester = rowMapIterator.value();
         if(_eduadmin->deleteCourse(deleteCourse)){
-//            qDebug() << "删除成功";
-            _eduadmin->showAllCourse();
-            QMessageBox::information(this,tr("提示"),tr("删除成功"),QMessageBox::Ok,QMessageBox::Ok);
-            return;
+            QMessageBox::information(this,tr("提示"),tr("成功删除 %1").arg(deleteCourse),QMessageBox::Ok,QMessageBox::Ok);
+            _eduadmin->deleteFromSemesterCourse(CourseSemester,deleteCourse);//从相应的学期选课情况表中删除
+            //            qDebug() << "删除成功";
         }else{
-            QMessageBox::critical(this,tr("提示"),tr("删除失败"),QMessageBox::Ok,QMessageBox::Ok);
-            return;
-//            qDebug() << "删除失败";
+            QMessageBox::critical(this,tr("提示"),tr("删除失败 %1").arg(deleteCourse),QMessageBox::Ok,QMessageBox::Ok);
+            //            qDebug() << "删除失败";
         }
     }
+    _eduadmin->showAllCourse();
 
 }//删除课程
 void Window::on_pushButton_modify_clicked()
@@ -203,12 +204,33 @@ void Window::on_pushButton_selectCourse_Ok_clicked()
 
     QAbstractItemModel *model= ui->tableView_selectCourse->model();
 
-    QCheckBox *checkbox = new QCheckBox;
-    checkbox = static_cast<QCheckBox*>(ui->tableView_selectCourse->indexWidget( model->index( 1,3)));
-    if(checkbox->isChecked()){
-        qDebug() <<"selected!";
-    }else{
-        qDebug() <<"unselected!";
+    QStringList selectedCourse;
+    for(int i=0;i<model->rowCount();++i){
+        QCheckBox *checkbox = new QCheckBox;
+        checkbox = static_cast<QCheckBox*>(ui->tableView_selectCourse->indexWidget( model->index(i,3)));
+        if(checkbox->isChecked()){
+            selectedCourse << "Yes";
+        }else {
+            selectedCourse << "Not";
+        }
+    }
+    if(!selectedCourse.isEmpty()){
+        if(_eduadmin->insertIntoSCT("FirstSCT","201701",selectedCourse)){
+            QMessageBox::information(this,tr("提示"),tr("选课成功"),QMessageBox::Ok,QMessageBox::Ok);
+        }else {
+            QMessageBox::information(this,tr("提示"),tr("选课失败"),QMessageBox::Ok,QMessageBox::Ok);
+        }
     }
 
 }//确认选课
+
+void Window::on_pushButton_refresh_clicked()
+{
+    _eduadmin->showAllCurrentSemesterCourse("第一学期");
+}//刷新课表
+
+
+void Window::on_pushButton_checkHasSelected_clicked()
+{
+
+}
