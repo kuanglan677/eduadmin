@@ -104,15 +104,38 @@ void EduAdmin::showAllCurrentSemesterCourse(const QString& semester = "第一学
     for(int i=0;i<model->rowCount();++i){//设置checkbox
         QCheckBox *ch = new QCheckBox;
 //        ch->setText("选择");//不会显示
-        ch->setCheckable(false);//设置不可编辑
-        ch->setEnabled(true);//设置可选
+        ch->setCheckable(true);//设置不可编辑
+        ch->setChecked(true);
+//        ch->setEnabled(true);//设置可选
+
+        QString  select = _sqlite->checkHaschecked("201701",1);
+        QStringList list = select.split('/');
+        for (int i=0;i<list.size();++i) {
+            QString s= model->data(model->index(i,0)).toString();
+            if(list.at(i)==s){
+                ch->setChecked(true);
+//                ch->setCheckable(false);
+                break;
+            }
+        }
+
+
+        /*
+         * 判断课程是否被选择
+         * 如果已选checkbox->setchecked;
+         */
+
         _window->ui->tableView_selectCourse->setIndexWidget(model->index(i,3),new QCheckBox(this));
     }    
 }//显示当前学期课程
-bool EduAdmin::insertIntoSCT(const QString& semesterTable,const QString& studentNo,QStringList il){
-    if(!_sqlite->insertIntoSCT(semesterTable,studentNo,il)){return false;}
+bool EduAdmin::insertIntoSCT(const QString& semesterTable,const QString& studentNo,const QStringList& il,const QStringList& ilName){
+    if(!_sqlite->insertIntoSCT(semesterTable,studentNo,il,ilName)){return false;}
     else return true;
 }//学生添加课程
+
+QString EduAdmin::checkHaschecked(const QString& studentNo,int semester){
+    return _sqlite->checkHaschecked(studentNo,semester);
+}//查询学生已选课程
 
 void EduAdmin::addRecord(){
     //    QString fileName = _window->getOpenFileName();

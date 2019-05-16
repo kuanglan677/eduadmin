@@ -10,6 +10,8 @@
 #include <QString>
 #include <QTableView>
 #include <QSqlQueryModel>
+
+#include <QCheckBox>
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -18,9 +20,11 @@ int main(int argc, char *argv[])
             w.show();
 
 
-
     //test
-
+//    QCheckBox *ab  = new QCheckBox;
+//    ab->setChecked(true);
+//    ab->setCheckable(true);
+//    ab->show();
     //    Window w;
     //    w.show();
 

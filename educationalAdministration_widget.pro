@@ -49,3 +49,5 @@ FORMS += \
 
 RESOURCES += \
     image.qrc
+
+LIBS += -I/usr/lib/ -lsqlite3

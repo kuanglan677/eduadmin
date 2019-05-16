@@ -9,6 +9,7 @@
 
 #include <string>
 #include <list>
+#include <sqlite3.h>
 
 bool Sqlite::createDatabase(const QString& databaseName , const QString& databasetype){
     QSqlDatabase database;
@@ -127,22 +128,32 @@ bool Sqlite::deleteColumn(const QString& tableName,const QString& columnName){
     return true;
 }  //删除表的指定列
 
-
-bool Sqlite::insertIntoSCT(const QString& semesterTable,const QString& studentNo,QStringList il){
+bool Sqlite::insertIntoSCT(const QString& semesterTable,const QString& studentNo,const QStringList& il,const QStringList& ilName){
     QString query;
     int count = il.size();
-    query = QObject::tr("delete fron %1 where StudentNo = '%2'").arg(semesterTable,studentNo);
-    execQuery(query);
+    //    query = QObject::tr("delete fron %1 where StudentNo = '%2'").arg(semesterTable,studentNo);
+    //    execQuery(query);
     query = QObject::tr("insert into %1 values('%2'").arg(semesterTable,studentNo);
     for (int i=0;i<count;++i) {
         query+=QObject::tr(",'%1'").arg(il.at(i));
     }
     query+=")";
 
-    if(!execQuery(query)){
-        return false;
+    QString query2;
+    query2= QObject::tr("update %1 set %2 = 'Yes'").arg(semesterTable,ilName.at(0));
+    for (int i=1;i<ilName.size();++i) {
+        query2 += QObject::tr(",%1 = 'Yes' ").arg(ilName.at(i));
+
     }
-    else return true;
+    query2 += QObject::tr(" where StudentNo = '%1'").arg(studentNo);
+
+    //update table set s1 =yes;s2 =yes where studentno = 1;
+
+    if(!execQuery(query)){
+        if(!execQuery(query2))
+            return false;
+    }
+    return true;
 }//学生添加课程
 QString Sqlite::semesterIntToQString(int semester){
     switch (semester) {
@@ -197,3 +208,51 @@ bool Sqlite::addCourse(QString semester,QString courseName,QString teacherName,Q
     if(!execQuery(query)){return false;}
     else return true;
 }//添加新的课程
+QString  Sqlite::checkHaschecked(const QString& studentNo,int semester){
+    QString table =sctIntToQString(semester);
+
+    //通过C语言的办法获得表的列名
+    QStringList columnName;
+    sqlite3 *db;
+    int ret = sqlite3_open("eduadmin",&db); //打开数据库 db为数据库的句柄
+    if (ret == SQLITE_OK){
+        //将QString 类型table 变为char*类型 ch;
+        char*  ch;
+        QByteArray ba = table.toLatin1(); // must
+        ch=ba.data();
+
+        //sqlite3_get_table准备的一些参数
+        char sql[50];
+        sprintf(sql, "SELECT * FROM %s ",ch);//执行语句
+        char **pResult=nullptr;//执行结果
+        int nRow=0, nCol=0;
+        char *errmsg=nullptr;//错误消息
+
+        ret =  sqlite3_get_table(db,sql, &pResult, &nRow, &nCol, &errmsg);//获得表的信息
+        if(ret == SQLITE_OK){
+            for (int j=0; j<nCol; j++){//将第一列输进columnName
+                char *column = *(pResult+j);
+                columnName << column;
+            }
+        }else{
+            qDebug() << errmsg ;
+        }
+    }
+
+    QString selectedCourse;
+    QString query =QObject::tr("select * from %1 where StudentNo = '%2'").arg(table,studentNo);
+    QSqlQuery sqlQuery;
+    if(sqlQuery.exec(query)){
+        while (sqlQuery.next()) {
+            for (int i=0;i<columnName.size();++i) {
+                if(sqlQuery.value(i).toString()=="Yes"){
+                    selectedCourse += columnName.at(i);
+                    selectedCourse += '/';
+                }
+            }
+        }
+    }else{
+        qDebug() << sqlQuery.lastError();
+    }
+    return selectedCourse;
+}//查询学生已选课程

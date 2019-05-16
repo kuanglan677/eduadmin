@@ -21,7 +21,7 @@ public:
 
     bool updateCourseInfo(const QString& oldName,const QString& newCourseName,const QString& newSemester,const QString& newTeacherName,const QString& newCapasity);//更新课程信息
     bool selectSemesterCourse(const QString& semester,QSqlQueryModel *model); //查找该学期的课程
-    bool insertIntoSCT(const QString& semesterTable,const QString& studentNo,QStringList il);//学生添加课程
+    bool insertIntoSCT(const QString& semesterTable,const QString& studentNo,const QStringList& il,const QStringList& ilName);//学生添加课程
     bool inquiryData();//查找
 
 
@@ -29,6 +29,7 @@ public:
     bool deleteFromSemesterCourse(int semester,const QString& courseName); //从相应的学期选课表中删除
     bool deleteCourse(const QString& courseName);//删除课程
     bool addCourse(QString semester,QString courseName,QString teacherName,QString capacity);//添加新的课程
+    QString checkHaschecked(const QString& studentNo,int semester);//查询学生已选课程
 private:
       QString semesterIntToQString(int semester);
       QString sctIntToQString(int semester);

@@ -30,7 +30,8 @@ public:
     bool deleteFromSemesterCourse(int semester,const QString& courseName); //从相应的学期选课表中删除
     //学生选课界面
     void showAllCurrentSemesterCourse(const QString& semester);//显示当前学期课程
-    bool insertIntoSCT(const QString& semesterTable,const QString& studentNo,QStringList il);//学生添加课程
+    bool insertIntoSCT(const QString& semesterTable,const QString& studentNo,const QStringList& il,const QStringList& ilName);//学生添加课程
+    QString checkHaschecked(const QString& studentNo,int semester);//查询学生已选课程
 private:
     Window *_window;
     GradeData *_gradaData;

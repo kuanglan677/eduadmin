@@ -220,20 +220,24 @@ void Window::on_pushButton_selectCourse_Ok_clicked()
 
     QAbstractItemModel *model= ui->tableView_selectCourse->model();
 
-    static QStringList selectedCourse;
-    static std::initializer_list<QString> il;
-    static std::vector<QString> vs;
+    /*static*/
+    QStringList selectedCourse;
+    QStringList selectedCourseName;
+//    static std::initializer_list<QString> il;
+//    static std::vector<QString> vs;
     for(int i=0;i<model->rowCount();++i){
         QCheckBox *checkbox = new QCheckBox;
         checkbox = static_cast<QCheckBox*>(ui->tableView_selectCourse->indexWidget( model->index(i,3)));
+        selectedCourseName << ui->tableView_selectCourse->model()->data( model->index(i,0)).toString();
         if(checkbox->isChecked()){
             selectedCourse << "Yes";
+
         }else {
             selectedCourse << "Not";
         }
     }
     if(!selectedCourse.isEmpty()){
-        if(_eduadmin->insertIntoSCT("FirstSCT","201701",selectedCourse)){
+        if(_eduadmin->insertIntoSCT("FirstSCT","201701",selectedCourse,selectedCourseName)){
             QMessageBox::information(this,tr("提示"),tr("选课成功"),QMessageBox::Ok,QMessageBox::Ok);
         }else {
             QMessageBox::information(this,tr("提示"),tr("选课失败"),QMessageBox::Ok,QMessageBox::Ok);
@@ -247,4 +251,9 @@ void Window::on_pushButton_refresh_clicked()
 }//刷新课表
 void Window::on_pushButton_checkHasSelected_clicked()
 {
+    QString selectedCourse = _eduadmin->checkHaschecked("201701",1);
+
+    if(!selectedCourse.isEmpty()){
+        QMessageBox::information(this,tr("提示"),tr("已选课程：\n")+selectedCourse,QMessageBox::Ok,QMessageBox::Ok);
+    }
 }//查看已选课程
